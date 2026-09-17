@@ -1,1 +1,550 @@
-{"metadata": {"dbt_schema_version": "https://schemas.getdbt.com/dbt/run-results/v6.json", "dbt_version": "1.12.3", "generated_at": "2026-08-27T11:44:18.592495Z", "invocation_id": "b6abc0b9-38be-41ef-b1c6-5dfb6d42af69", "invocation_started_at": "2026-08-27T11:43:33.959398Z", "env": {}}, "results": [{"status": "success", "timing": [{"name": "compile", "started_at": "2026-08-27T11:43:38.195615Z", "completed_at": "2026-08-27T11:43:38.195625Z"}, {"name": "execute", "started_at": "2026-08-27T11:43:38.195892Z", "completed_at": "2026-08-27T11:43:43.930822Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 5.736876726150513, "adapter_response": {"_message": "INSERT 7564", "code": "INSERT", "rows_affected": 7564}, "message": "INSERT 7564", "failures": null, "unique_id": "seed.dbt_tennis.charting-m-matches", "compiled": null, "compiled_code": null, "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "success", "timing": [{"name": "compile", "started_at": "2026-08-27T11:43:43.937417Z", "completed_at": "2026-08-27T11:43:43.937421Z"}, {"name": "execute", "started_at": "2026-08-27T11:43:43.937704Z", "completed_at": "2026-08-27T11:43:55.452034Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 11.516261100769043, "adapter_response": {"_message": "INSERT 56850", "code": "INSERT", "rows_affected": 56850}, "message": "INSERT 56850", "failures": null, "unique_id": "seed.dbt_tennis.charting-m-stats-Overview", "compiled": null, "compiled_code": null, "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "success", "timing": [{"name": "compile", "started_at": "2026-08-27T11:43:55.455863Z", "completed_at": "2026-08-27T11:43:55.481897Z"}, {"name": "execute", "started_at": "2026-08-27T11:43:55.484042Z", "completed_at": "2026-08-27T11:43:59.351213Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 3.8974359035491943, "adapter_response": {"_message": "CREATE TABLE (7.6k rows, 1.2 MiB processed)", "code": "CREATE TABLE", "rows_affected": 7564, "bytes_processed": 1207332, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "650c2a2f-6f1a-4b0d-b2cd-f8a3f81cf3d0", "slot_ms": 4155}, "message": "CREATE TABLE (7.6k rows, 1.2 MiB processed)", "failures": null, "unique_id": "model.dbt_tennis.stg_matches", "compiled": true, "compiled_code": "-- One row per charted match.\nwith source as (\n    select * from `gary-yiu-001`.`tennis_match`.`raw_matches`\n)\n\nselect\n    match_id,\n    player_1,\n    player_2,\n    p1_hand,\n    p2_hand,\n    parse_date('%Y%m%d', cast(`Date` as string)) as match_date,\n    Tournament                                   as tournament,\n    `Round`                                      as round,\n    Court                                        as court,\n    Surface                                      as surface,\n    Umpire                                       as umpire,\n    best_of,\n    charted_by\n\nfrom source", "relation_name": "`gary-yiu-001`.`tennis_match`.`stg_matches`", "batch_results": null, "overload_results": null}, {"status": "success", "timing": [{"name": "compile", "started_at": "2026-08-27T11:43:59.359455Z", "completed_at": "2026-08-27T11:43:59.364540Z"}, {"name": "execute", "started_at": "2026-08-27T11:43:59.365034Z", "completed_at": "2026-08-27T11:44:02.480561Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 3.1257338523864746, "adapter_response": {"_message": "CREATE TABLE (15.1k rows, 9.9 MiB processed)", "code": "CREATE TABLE", "rows_affected": 15090, "bytes_processed": 10353636, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "fb3a788e-7501-4f4a-b230-c3d352c99b80", "slot_ms": 4092}, "message": "CREATE TABLE (15.1k rows, 9.9 MiB processed)", "failures": null, "unique_id": "model.dbt_tennis.stg_match_stats", "compiled": true, "compiled_code": "-- One row per player per charted match.\n--\n-- The seed carries a row per set ('1'..'5') plus a 'Total' row that already\n-- sums them, so anything but set = 'Total' double-counts.\n--\n-- 13 matches were charted twice. A handful are byte-identical, but the rest\n-- disagree slightly (two volunteers counting the same match), so distinct\n-- won't collapse them -- qualify picks one charting deterministically.\n-- ponytail: highest serve_pts wins the tie; swap the order by if you'd\n-- rather reconcile the two chartings properly.\nwith source as (\n    select * from `gary-yiu-001`.`tennis_match`.`raw_match_stats`\n    where `set` = 'Total'\n)\n\nselect\n    match_id,\n    player,\n    serve_pts,\n    aces,\n    dfs,\n    first_in,\n    first_won,\n    second_in,\n    second_won,\n    bk_pts,\n    bp_saved,\n    return_pts,\n    return_pts_won,\n    winners,\n    unforced\n\nfrom source\nqualify row_number() over (\n    partition by match_id, player\n    order by serve_pts desc, winners desc\n) = 1", "relation_name": "`gary-yiu-001`.`tennis_match`.`stg_match_stats`", "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:02.492316Z", "completed_at": "2026-08-27T11:44:02.504567Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:02.505017Z", "completed_at": "2026-08-27T11:44:03.966032Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.475679874420166, "adapter_response": {"_message": "SELECT (1.0 rows, 45.1 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 46221, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "b8683001-260a-4623-ae51-f622a1dbc786", "slot_ms": 11}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.accepted_values_stg_matches_surface__Hard__Clay__Grass.a20ee5458a", "compiled": true, "compiled_code": "\n    \n    \n\nwith all_values as (\n\n    select\n        surface as value_field,\n        count(*) as n_records\n\n    from `gary-yiu-001`.`tennis_match`.`stg_matches`\n    group by surface\n\n)\n\nselect *\nfrom all_values\nwhere value_field not in (\n    'Hard','Clay','Grass'\n)\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:03.969684Z", "completed_at": "2026-08-27T11:44:03.980156Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:03.980518Z", "completed_at": "2026-08-27T11:44:05.405201Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.4384410381317139, "adapter_response": {"_message": "SELECT (1.0 rows, 429.2 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 439518, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "9b7e9357-6408-4caf-90d5-386c241ee903", "slot_ms": 9}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.not_null_stg_matches_match_id.603ea5cb58", "compiled": true, "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`stg_matches`\nwhere match_id is null\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:05.412302Z", "completed_at": "2026-08-27T11:44:05.536235Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:05.536527Z", "completed_at": "2026-08-27T11:44:07.371205Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.9620082378387451, "adapter_response": {"_message": "SELECT (1.0 rows, 429.2 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 439518, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "363ef452-8622-4560-ac89-35a44f2aa8ba", "slot_ms": 16}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.unique_stg_matches_match_id.367c54f188", "compiled": true, "compiled_code": "\n    \n    \n\nwith dbt_test__target as (\n\n  select match_id as unique_field\n  from `gary-yiu-001`.`tennis_match`.`stg_matches`\n  where match_id is not null\n\n)\n\nselect\n    unique_field,\n    count(*) as n_records\n\nfrom dbt_test__target\ngroup by unique_field\nhaving count(*) > 1\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:07.378212Z", "completed_at": "2026-08-27T11:44:07.390883Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:07.391424Z", "completed_at": "2026-08-27T11:44:09.179415Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.8055620193481445, "adapter_response": {"_message": "SELECT (1.0 rows, 1.1 MiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 1118989, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "47c7b2e9-2d82-4210-a866-6f342ea01edf", "slot_ms": 29}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.dbt_utils_unique_combination_of_columns_stg_match_stats_match_id__player.426ebef2d7", "compiled": true, "compiled_code": "\n\n\n\n\n\nwith validation_errors as (\n\n    select\n        match_id, player\n    from `gary-yiu-001`.`tennis_match`.`stg_match_stats`\n    group by match_id, player\n    having count(*) > 1\n\n)\n\nselect *\nfrom validation_errors\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:09.189097Z", "completed_at": "2026-08-27T11:44:09.201798Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:09.202312Z", "completed_at": "2026-08-27T11:44:10.682686Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.497497797012329, "adapter_response": {"_message": "SELECT (1.0 rows, 856.3 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 876848, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "7dca8a4c-12db-44c2-8262-afc1b5a2c7be", "slot_ms": 11}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.not_null_stg_match_stats_match_id.d36c2227a1", "compiled": true, "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`stg_match_stats`\nwhere match_id is null\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:10.690917Z", "completed_at": "2026-08-27T11:44:10.706495Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:10.707034Z", "completed_at": "2026-08-27T11:44:12.110276Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.4248130321502686, "adapter_response": {"_message": "SELECT (1.0 rows, 236.5 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 242141, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "07c6c2aa-5701-408a-8a71-06389963da77", "slot_ms": 19}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.not_null_stg_match_stats_player.9a09391e66", "compiled": true, "compiled_code": "\n    \n    \n\n\n\nselect player\nfrom `gary-yiu-001`.`tennis_match`.`stg_match_stats`\nwhere player is null\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "success", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:12.123761Z", "completed_at": "2026-08-27T11:44:12.128377Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:12.129106Z", "completed_at": "2026-08-27T11:44:15.592895Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 3.4716718196868896, "adapter_response": {"_message": "CREATE TABLE (15.1k rows, 3.5 MiB processed)", "code": "CREATE TABLE", "rows_affected": 15088, "bytes_processed": 3719104, "bytes_billed": 20971520, "location": "US", "project_id": "gary-yiu-001", "job_id": "143b4ec6-42c4-4051-989a-f17a2b075212", "slot_ms": 6676}, "message": "CREATE TABLE (15.1k rows, 3.5 MiB processed)", "failures": null, "unique_id": "model.dbt_tennis.fct_player_match", "compiled": true, "compiled_code": "-- Player x match, with match context and serve/return rates.\n--\n-- Note: this dataset records no winner, so there is no won/lost flag here.\n-- Deriving one needs the 125MB charting-*-points-* files.\nwith stats as (\n    select * from `gary-yiu-001`.`tennis_match`.`stg_match_stats`\n),\n\nmatches as (\n    select * from `gary-yiu-001`.`tennis_match`.`stg_matches`\n)\n\nselect\n    s.match_id,\n    s.player,\n    case when s.player = m.player_1 then m.player_2 else m.player_1 end as opponent,\n    case when s.player = m.player_1 then m.p1_hand else m.p2_hand end   as hand,\n    m.match_date,\n    m.tournament,\n    m.round,\n    m.surface,\n    m.best_of,\n\n    s.serve_pts,\n    s.aces,\n    s.dfs,\n    s.winners,\n    s.unforced,\n\n    -- nullif guards the matches charted with zero of a given point type\n    safe_divide(s.first_in,       nullif(s.serve_pts, 0))  as first_serve_pct,\n    safe_divide(s.first_won,      nullif(s.first_in, 0))   as first_won_pct,\n    safe_divide(s.second_won,     nullif(s.second_in, 0))  as second_won_pct,\n    safe_divide(s.aces,           nullif(s.serve_pts, 0))  as ace_rate,\n    safe_divide(s.dfs,            nullif(s.serve_pts, 0))  as df_rate,\n    safe_divide(s.bp_saved,       nullif(s.bk_pts, 0))     as bp_save_pct,\n    safe_divide(s.return_pts_won, nullif(s.return_pts, 0)) as return_won_pct,\n    safe_divide(s.winners,        nullif(s.unforced, 0))   as winner_ue_ratio\n\nfrom stats as s\ninner join matches as m\n    on s.match_id = m.match_id", "relation_name": "`gary-yiu-001`.`tennis_match`.`fct_player_match`", "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:15.600221Z", "completed_at": "2026-08-27T11:44:15.619500Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:15.620043Z", "completed_at": "2026-08-27T11:44:17.068760Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.4718189239501953, "adapter_response": {"_message": "SELECT (1.0 rows, 117.9 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 120704, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "4611bc71-4c34-4fed-a414-bcebebf966e0", "slot_ms": 11}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.dbt_utils_accepted_range_fct_player_match_first_serve_pct__True__1__0.6627b3956f", "compiled": true, "compiled_code": "\n\nwith meet_condition as(\n  select *\n  from `gary-yiu-001`.`tennis_match`.`fct_player_match`\n),\n\nvalidation_errors as (\n  select *\n  from meet_condition\n  where\n    -- never true, defaults to an empty result set. Exists to ensure any combo of the `or` clauses below succeeds\n    1 = 2\n    -- records with a value >= min_value are permitted. The `not` flips this to find records that don't meet the rule.\n    or not first_serve_pct >= 0\n    -- records with a value <= max_value are permitted. The `not` flips this to find records that don't meet the rule.\n    or not first_serve_pct <= 1\n)\n\nselect *\nfrom validation_errors\n\n", "relation_name": null, "batch_results": null, "overload_results": null}, {"status": "pass", "timing": [{"name": "compile", "started_at": "2026-08-27T11:44:17.076337Z", "completed_at": "2026-08-27T11:44:17.093576Z"}, {"name": "execute", "started_at": "2026-08-27T11:44:17.093978Z", "completed_at": "2026-08-27T11:44:18.575394Z"}], "thread_id": "Thread-1 (worker)", "execution_time": 1.5021977424621582, "adapter_response": {"_message": "SELECT (1.0 rows, 856.2 KiB processed)", "code": "SELECT", "rows_affected": 1, "bytes_processed": 876708, "bytes_billed": 10485760, "location": "US", "project_id": "gary-yiu-001", "job_id": "c463c937-f0f8-4a2b-8eef-2479767167f4", "slot_ms": 11}, "message": null, "failures": 0, "unique_id": "test.dbt_tennis.not_null_fct_player_match_match_id.5c21941eee", "compiled": true, "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`fct_player_match`\nwhere match_id is null\n\n\n", "relation_name": null, "batch_results": null, "overload_results": null}], "elapsed_time": 42.09948420524597, "args": {"use_v2_parser": false, "latest_version_pointer_enabled_by_default": false, "state_modified_compare_more_unrendered_values": true, "state_modified_compare_vars": false, "show_resource_report": false, "printer_width": 80, "require_ref_searches_node_package_before_root": false, "send_anonymous_usage_stats": true, "upload_to_artifacts_ingest_api": false, "v2_parser": "dbt-core-experimental-parser parse", "exclude_resource_types": [], "use_colors": true, "snowflake_projects_otel": false, "require_nested_cumulative_type_params": true, "validate_macro_args": true, "require_sql_header_in_test_configs": false, "empty": false, "partial_parse": true, "write_json": true, "use_colors_file": true, "log_file_max_bytes": 10485760, "populate_cache": true, "print": true, "select": [], "quiet": false, "partial_parse_file_diff": true, "require_explicit_package_overrides_for_builtin_materializations": true, "strict_mode": false, "warn_error_options": {"error": [], "warn": [], "silence": []}, "invocation_command": "dbt build", "vars": {}, "allow_jinja_file_extensions": false, "source_freshness_run_project_hooks": true, "use_catalogs_v2": false, "show_all_deprecations": false, "sqlparse": {"MAX_GROUPING_DEPTH": null, "MAX_GROUPING_TOKENS": null}, "hints_enabled": true, "log_path": "/Users/gary/Github/gary_yiu_repo/dbt_cosmos/dags/templates/dbt_tennis/logs", "log_level": "info", "favor_state": false, "use_fast_test_edges": false, "log_format": "default", "require_generic_test_arguments_property": true, "macro_debugging": false, "skip_nodes_if_on_run_start_fails": true, "version_check": true, "log_level_file": "debug", "indirect_selection": "eager", "require_source_and_semantic_model_names_without_spaces": false, "static_parser": true, "include_saved_query": false, "require_valid_schema_from_generate_schema_name": false, "require_all_warnings_handled_by_warn_error": true, "require_unique_project_resource_names": false, "maximum_seed_size_mib": 1, "which": "build", "profiles_dir": "/Users/gary/.dbt", "require_resource_names_without_spaces": true, "introspect": true, "require_corrected_analysis_fqns": false, "show": false, "support_custom_ref_kwargs": false, "require_batched_execution_for_custom_microbatch_strategy": true, "require_yaml_configuration_for_mf_time_spines": true, "cache_selected_only": false, "log_format_file": "debug", "defer": false, "resource_types": [], "project_dir": "/Users/gary/Github/gary_yiu_repo/dbt_cosmos/dags/templates/dbt_tennis", "enable_grouped_warn_error_parser_logs": false, "export_saved_queries": false, "exclude": []}}
+{
+    "metadata": {
+        "dbt_schema_version": "https://schemas.getdbt.com/dbt/run-results/v6.json",
+        "dbt_version": "1.12.3",
+        "generated_at": "2026-08-27T11:44:18.592495Z",
+        "invocation_id": "b6abc0b9-38be-41ef-b1c6-5dfb6d42af69",
+        "invocation_started_at": "2026-08-27T11:43:33.959398Z",
+        "env": {}
+    },
+    "results": [
+        {
+            "status": "success",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:43:38.195615Z",
+                    "completed_at": "2026-08-27T11:43:38.195625Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:43:38.195892Z",
+                    "completed_at": "2026-08-27T11:43:43.930822Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 5.736876726150513,
+            "adapter_response": {
+                "_message": "INSERT 7564",
+                "code": "INSERT",
+                "rows_affected": 7564
+            },
+            "message": "INSERT 7564",
+            "failures": null,
+            "unique_id": "seed.dbt_tennis.charting-m-matches",
+            "compiled": null,
+            "compiled_code": null,
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "success",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:43:43.937417Z",
+                    "completed_at": "2026-08-27T11:43:43.937421Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:43:43.937704Z",
+                    "completed_at": "2026-08-27T11:43:55.452034Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 11.516261100769043,
+            "adapter_response": {
+                "_message": "INSERT 56850",
+                "code": "INSERT",
+                "rows_affected": 56850
+            },
+            "message": "INSERT 56850",
+            "failures": null,
+            "unique_id": "seed.dbt_tennis.charting-m-stats-Overview",
+            "compiled": null,
+            "compiled_code": null,
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "success",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:43:55.455863Z",
+                    "completed_at": "2026-08-27T11:43:55.481897Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:43:55.484042Z",
+                    "completed_at": "2026-08-27T11:43:59.351213Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 3.8974359035491943,
+            "adapter_response": {
+                "_message": "CREATE TABLE (7.6k rows, 1.2 MiB processed)",
+                "code": "CREATE TABLE",
+                "rows_affected": 7564,
+                "bytes_processed": 1207332,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "650c2a2f-6f1a-4b0d-b2cd-f8a3f81cf3d0",
+                "slot_ms": 4155
+            },
+            "message": "CREATE TABLE (7.6k rows, 1.2 MiB processed)",
+            "failures": null,
+            "unique_id": "model.dbt_tennis.stg_matches",
+            "compiled": true,
+            "compiled_code": "-- One row per charted match.\nwith source as (\n    select * from `gary-yiu-001`.`tennis_match`.`raw_matches`\n)\n\nselect\n    match_id,\n    player_1,\n    player_2,\n    p1_hand,\n    p2_hand,\n    parse_date('%Y%m%d', cast(`Date` as string)) as match_date,\n    Tournament                                   as tournament,\n    `Round`                                      as round,\n    Court                                        as court,\n    Surface                                      as surface,\n    Umpire                                       as umpire,\n    best_of,\n    charted_by\n\nfrom source",
+            "relation_name": "`gary-yiu-001`.`tennis_match`.`stg_matches`",
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "success",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:43:59.359455Z",
+                    "completed_at": "2026-08-27T11:43:59.364540Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:43:59.365034Z",
+                    "completed_at": "2026-08-27T11:44:02.480561Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 3.1257338523864746,
+            "adapter_response": {
+                "_message": "CREATE TABLE (15.1k rows, 9.9 MiB processed)",
+                "code": "CREATE TABLE",
+                "rows_affected": 15090,
+                "bytes_processed": 10353636,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "fb3a788e-7501-4f4a-b230-c3d352c99b80",
+                "slot_ms": 4092
+            },
+            "message": "CREATE TABLE (15.1k rows, 9.9 MiB processed)",
+            "failures": null,
+            "unique_id": "model.dbt_tennis.stg_match_stats",
+            "compiled": true,
+            "compiled_code": "-- One row per player per charted match.\n--\n-- The seed carries a row per set ('1'..'5') plus a 'Total' row that already\n-- sums them, so anything but set = 'Total' double-counts.\n--\n-- 13 matches were charted twice. A handful are byte-identical, but the rest\n-- disagree slightly (two volunteers counting the same match), so distinct\n-- won't collapse them -- qualify picks one charting deterministically.\n-- ponytail: highest serve_pts wins the tie; swap the order by if you'd\n-- rather reconcile the two chartings properly.\nwith source as (\n    select * from `gary-yiu-001`.`tennis_match`.`raw_match_stats`\n    where `set` = 'Total'\n)\n\nselect\n    match_id,\n    player,\n    serve_pts,\n    aces,\n    dfs,\n    first_in,\n    first_won,\n    second_in,\n    second_won,\n    bk_pts,\n    bp_saved,\n    return_pts,\n    return_pts_won,\n    winners,\n    unforced\n\nfrom source\nqualify row_number() over (\n    partition by match_id, player\n    order by serve_pts desc, winners desc\n) = 1",
+            "relation_name": "`gary-yiu-001`.`tennis_match`.`stg_match_stats`",
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:02.492316Z",
+                    "completed_at": "2026-08-27T11:44:02.504567Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:02.505017Z",
+                    "completed_at": "2026-08-27T11:44:03.966032Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.475679874420166,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 45.1 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 46221,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "b8683001-260a-4623-ae51-f622a1dbc786",
+                "slot_ms": 11
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.accepted_values_stg_matches_surface__Hard__Clay__Grass.a20ee5458a",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\nwith all_values as (\n\n    select\n        surface as value_field,\n        count(*) as n_records\n\n    from `gary-yiu-001`.`tennis_match`.`stg_matches`\n    group by surface\n\n)\n\nselect *\nfrom all_values\nwhere value_field not in (\n    'Hard','Clay','Grass'\n)\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:03.969684Z",
+                    "completed_at": "2026-08-27T11:44:03.980156Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:03.980518Z",
+                    "completed_at": "2026-08-27T11:44:05.405201Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.4384410381317139,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 429.2 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 439518,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "9b7e9357-6408-4caf-90d5-386c241ee903",
+                "slot_ms": 9
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.not_null_stg_matches_match_id.603ea5cb58",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`stg_matches`\nwhere match_id is null\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:05.412302Z",
+                    "completed_at": "2026-08-27T11:44:05.536235Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:05.536527Z",
+                    "completed_at": "2026-08-27T11:44:07.371205Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.9620082378387451,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 429.2 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 439518,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "363ef452-8622-4560-ac89-35a44f2aa8ba",
+                "slot_ms": 16
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.unique_stg_matches_match_id.367c54f188",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\nwith dbt_test__target as (\n\n  select match_id as unique_field\n  from `gary-yiu-001`.`tennis_match`.`stg_matches`\n  where match_id is not null\n\n)\n\nselect\n    unique_field,\n    count(*) as n_records\n\nfrom dbt_test__target\ngroup by unique_field\nhaving count(*) > 1\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:07.378212Z",
+                    "completed_at": "2026-08-27T11:44:07.390883Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:07.391424Z",
+                    "completed_at": "2026-08-27T11:44:09.179415Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.8055620193481445,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 1.1 MiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 1118989,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "47c7b2e9-2d82-4210-a866-6f342ea01edf",
+                "slot_ms": 29
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.dbt_utils_unique_combination_of_columns_stg_match_stats_match_id__player.426ebef2d7",
+            "compiled": true,
+            "compiled_code": "\n\n\n\n\n\nwith validation_errors as (\n\n    select\n        match_id, player\n    from `gary-yiu-001`.`tennis_match`.`stg_match_stats`\n    group by match_id, player\n    having count(*) > 1\n\n)\n\nselect *\nfrom validation_errors\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:09.189097Z",
+                    "completed_at": "2026-08-27T11:44:09.201798Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:09.202312Z",
+                    "completed_at": "2026-08-27T11:44:10.682686Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.497497797012329,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 856.3 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 876848,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "7dca8a4c-12db-44c2-8262-afc1b5a2c7be",
+                "slot_ms": 11
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.not_null_stg_match_stats_match_id.d36c2227a1",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`stg_match_stats`\nwhere match_id is null\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:10.690917Z",
+                    "completed_at": "2026-08-27T11:44:10.706495Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:10.707034Z",
+                    "completed_at": "2026-08-27T11:44:12.110276Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.4248130321502686,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 236.5 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 242141,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "07c6c2aa-5701-408a-8a71-06389963da77",
+                "slot_ms": 19
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.not_null_stg_match_stats_player.9a09391e66",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\n\n\nselect player\nfrom `gary-yiu-001`.`tennis_match`.`stg_match_stats`\nwhere player is null\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "success",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:12.123761Z",
+                    "completed_at": "2026-08-27T11:44:12.128377Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:12.129106Z",
+                    "completed_at": "2026-08-27T11:44:15.592895Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 3.4716718196868896,
+            "adapter_response": {
+                "_message": "CREATE TABLE (15.1k rows, 3.5 MiB processed)",
+                "code": "CREATE TABLE",
+                "rows_affected": 15088,
+                "bytes_processed": 3719104,
+                "bytes_billed": 20971520,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "143b4ec6-42c4-4051-989a-f17a2b075212",
+                "slot_ms": 6676
+            },
+            "message": "CREATE TABLE (15.1k rows, 3.5 MiB processed)",
+            "failures": null,
+            "unique_id": "model.dbt_tennis.fct_player_match",
+            "compiled": true,
+            "compiled_code": "-- Player x match, with match context and serve/return rates.\n--\n-- Note: this dataset records no winner, so there is no won/lost flag here.\n-- Deriving one needs the 125MB charting-*-points-* files.\nwith stats as (\n    select * from `gary-yiu-001`.`tennis_match`.`stg_match_stats`\n),\n\nmatches as (\n    select * from `gary-yiu-001`.`tennis_match`.`stg_matches`\n)\n\nselect\n    s.match_id,\n    s.player,\n    case when s.player = m.player_1 then m.player_2 else m.player_1 end as opponent,\n    case when s.player = m.player_1 then m.p1_hand else m.p2_hand end   as hand,\n    m.match_date,\n    m.tournament,\n    m.round,\n    m.surface,\n    m.best_of,\n\n    s.serve_pts,\n    s.aces,\n    s.dfs,\n    s.winners,\n    s.unforced,\n\n    -- nullif guards the matches charted with zero of a given point type\n    safe_divide(s.first_in,       nullif(s.serve_pts, 0))  as first_serve_pct,\n    safe_divide(s.first_won,      nullif(s.first_in, 0))   as first_won_pct,\n    safe_divide(s.second_won,     nullif(s.second_in, 0))  as second_won_pct,\n    safe_divide(s.aces,           nullif(s.serve_pts, 0))  as ace_rate,\n    safe_divide(s.dfs,            nullif(s.serve_pts, 0))  as df_rate,\n    safe_divide(s.bp_saved,       nullif(s.bk_pts, 0))     as bp_save_pct,\n    safe_divide(s.return_pts_won, nullif(s.return_pts, 0)) as return_won_pct,\n    safe_divide(s.winners,        nullif(s.unforced, 0))   as winner_ue_ratio\n\nfrom stats as s\ninner join matches as m\n    on s.match_id = m.match_id",
+            "relation_name": "`gary-yiu-001`.`tennis_match`.`fct_player_match`",
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:15.600221Z",
+                    "completed_at": "2026-08-27T11:44:15.619500Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:15.620043Z",
+                    "completed_at": "2026-08-27T11:44:17.068760Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.4718189239501953,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 117.9 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 120704,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "4611bc71-4c34-4fed-a414-bcebebf966e0",
+                "slot_ms": 11
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.dbt_utils_accepted_range_fct_player_match_first_serve_pct__True__1__0.6627b3956f",
+            "compiled": true,
+            "compiled_code": "\n\nwith meet_condition as(\n  select *\n  from `gary-yiu-001`.`tennis_match`.`fct_player_match`\n),\n\nvalidation_errors as (\n  select *\n  from meet_condition\n  where\n    -- never true, defaults to an empty result set. Exists to ensure any combo of the `or` clauses below succeeds\n    1 = 2\n    -- records with a value >= min_value are permitted. The `not` flips this to find records that don't meet the rule.\n    or not first_serve_pct >= 0\n    -- records with a value <= max_value are permitted. The `not` flips this to find records that don't meet the rule.\n    or not first_serve_pct <= 1\n)\n\nselect *\nfrom validation_errors\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        },
+        {
+            "status": "pass",
+            "timing": [
+                {
+                    "name": "compile",
+                    "started_at": "2026-08-27T11:44:17.076337Z",
+                    "completed_at": "2026-08-27T11:44:17.093576Z"
+                },
+                {
+                    "name": "execute",
+                    "started_at": "2026-08-27T11:44:17.093978Z",
+                    "completed_at": "2026-08-27T11:44:18.575394Z"
+                }
+            ],
+            "thread_id": "Thread-1 (worker)",
+            "execution_time": 1.5021977424621582,
+            "adapter_response": {
+                "_message": "SELECT (1.0 rows, 856.2 KiB processed)",
+                "code": "SELECT",
+                "rows_affected": 1,
+                "bytes_processed": 876708,
+                "bytes_billed": 10485760,
+                "location": "US",
+                "project_id": "gary-yiu-001",
+                "job_id": "c463c937-f0f8-4a2b-8eef-2479767167f4",
+                "slot_ms": 11
+            },
+            "message": null,
+            "failures": 0,
+            "unique_id": "test.dbt_tennis.not_null_fct_player_match_match_id.5c21941eee",
+            "compiled": true,
+            "compiled_code": "\n    \n    \n\n\n\nselect match_id\nfrom `gary-yiu-001`.`tennis_match`.`fct_player_match`\nwhere match_id is null\n\n\n",
+            "relation_name": null,
+            "batch_results": null,
+            "overload_results": null
+        }
+    ],
+    "elapsed_time": 42.09948420524597,
+    "args": {
+        "use_v2_parser": false,
+        "latest_version_pointer_enabled_by_default": false,
+        "state_modified_compare_more_unrendered_values": true,
+        "state_modified_compare_vars": false,
+        "show_resource_report": false,
+        "printer_width": 80,
+        "require_ref_searches_node_package_before_root": false,
+        "send_anonymous_usage_stats": true,
+        "upload_to_artifacts_ingest_api": false,
+        "v2_parser": "dbt-core-experimental-parser parse",
+        "exclude_resource_types": [],
+        "use_colors": true,
+        "snowflake_projects_otel": false,
+        "require_nested_cumulative_type_params": true,
+        "validate_macro_args": true,
+        "require_sql_header_in_test_configs": false,
+        "empty": false,
+        "partial_parse": true,
+        "write_json": true,
+        "use_colors_file": true,
+        "log_file_max_bytes": 10485760,
+        "populate_cache": true,
+        "print": true,
+        "select": [],
+        "quiet": false,
+        "partial_parse_file_diff": true,
+        "require_explicit_package_overrides_for_builtin_materializations": true,
+        "strict_mode": false,
+        "warn_error_options": {
+            "error": [],
+            "warn": [],
+            "silence": []
+        },
+        "invocation_command": "dbt build",
+        "vars": {},
+        "allow_jinja_file_extensions": false,
+        "source_freshness_run_project_hooks": true,
+        "use_catalogs_v2": false,
+        "show_all_deprecations": false,
+        "sqlparse": {
+            "MAX_GROUPING_DEPTH": null,
+            "MAX_GROUPING_TOKENS": null
+        },
+        "hints_enabled": true,
+        "log_path": "/Users/gary/Github/gary_yiu_repo/dbt_cosmos/dags/templates/dbt_tennis/logs",
+        "log_level": "info",
+        "favor_state": false,
+        "use_fast_test_edges": false,
+        "log_format": "default",
+        "require_generic_test_arguments_property": true,
+        "macro_debugging": false,
+        "skip_nodes_if_on_run_start_fails": true,
+        "version_check": true,
+        "log_level_file": "debug",
+        "indirect_selection": "eager",
+        "require_source_and_semantic_model_names_without_spaces": false,
+        "static_parser": true,
+        "include_saved_query": false,
+        "require_valid_schema_from_generate_schema_name": false,
+        "require_all_warnings_handled_by_warn_error": true,
+        "require_unique_project_resource_names": false,
+        "maximum_seed_size_mib": 1,
+        "which": "build",
+        "profiles_dir": "/Users/gary/.dbt",
+        "require_resource_names_without_spaces": true,
+        "introspect": true,
+        "require_corrected_analysis_fqns": false,
+        "show": false,
+        "support_custom_ref_kwargs": false,
+        "require_batched_execution_for_custom_microbatch_strategy": true,
+        "require_yaml_configuration_for_mf_time_spines": true,
+        "cache_selected_only": false,
+        "log_format_file": "debug",
+        "defer": false,
+        "resource_types": [],
+        "project_dir": "/Users/gary/Github/gary_yiu_repo/dbt_cosmos/dags/templates/dbt_tennis",
+        "enable_grouped_warn_error_parser_logs": false,
+        "export_saved_queries": false,
+        "exclude": []
+    }
+}

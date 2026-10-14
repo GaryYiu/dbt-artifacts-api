@@ -1,6 +1,6 @@
 # dbt Artifacts Service — 12 Week Build Plan
 
-**Goal:** by end of December 2026, open an empty directory and get to a typed, tested FastAPI service running in a container with green CI — without help.
+**Goal:** by end of December 2026 (may slip to late January 2027), open an empty directory and get to a typed, tested FastAPI service running in a container with green CI — without help.
 
 **Budget:** ~4 hrs/week, two 2-hour sessions.
 **Window:** September – December 2026 (autumn technical sprint, before N2 prep starts).
@@ -24,7 +24,9 @@ Claude can **explain, review, and unblock**. It cannot produce code you keep.
 
 - [ ] Commit after every session with a real message. The git history is part of what you show people. "1000 lines, initial commit" reads as generated.
 - [ ] Keep `NOTES.md` — what confused you, how you resolved it. Five minutes a session. In six months it's what you draw on in interviews.
-- [ ] Never use Trustpilot artifacts. Public repo. Use `jaffle_shop_duckdb` only.
+- [ ] Never use Trustpilot artifacts. Public repo. Use your own `dbt_tennis` fixtures only.
+- [ ] Branch per session (`session-3-edge`, etc.) instead of committing straight to `main`.
+- [ ] Before every commit: `uv run mypy src`, `uv run ruff check`, `uv run pytest`.
 
 ---
 
@@ -51,30 +53,40 @@ In-memory only. No database. Learn typing and parsing without fighting an ORM.
 
 ### Week 1
 
-**Session 1 — Scaffold (2 hrs)**
-- [ ] `uv init`, `src/` layout
-- [ ] Add deps: pydantic, pytest, mypy, ruff
-- [ ] Configure `pyproject.toml`: mypy **strict mode**, ruff
-- [ ] `uv run pytest` passes with one trivial test
-- [ ] `uv run mypy src` clean on empty package
-- [ ] Commit
+**Session 1 — Scaffold (2 hrs)** ✅ done
+- [x] `uv init --package`, `src/` layout
+- [x] Add deps: `uv add fastapi pydantic`, `uv add --dev mypy pytest ruff`
+- [x] Configure `pyproject.toml`: mypy **strict mode**
+- [x] `uv run pytest` passes with one trivial test
+- [x] `uv run mypy src` clean
+- [x] Commit
 
 *Goal: tooling green before there's anything to break.*
 
-**Session 2 — One model, by hand (2 hrs)**
-- [ ] Write a single `Node` Pydantic model, ~6 fields, typed
-- [ ] Function: open manifest → pull `nodes` → return `list[Node]`
-- [ ] One test asserting expected model count
-- [ ] Commit
+**Session 2 — One model, by hand (2 hrs)** ✅ done
+- [x] Write a single `Node` Pydantic model (database, schema_/alias, resource_type, original_file_path, unique_id, description, created_at)
+- [x] `parse_manifest()`: open manifest → pull `nodes` → return `list[Node]`
+- [x] One test asserting node count + every node has a `unique_id`
+- [x] Commit
+
+**Loose ends carried over from Week 1** ✅ done
+- [x] Add ruff config: `line-length = 100`, `select = ["E", "F", "I", "UP"]`
+- [x] Remove unused `import pytest` in `test_parse.py`; run `uv run ruff format`
+- [x] Rename test to `test_parse_manifest_returns_nodes`
+- [x] Fixed `Optional`/`List` `NameError` in `model.py` by switching to built-in `str | None` / `list[...]` (Python 3.12, no `typing` import needed)
 
 *Expected friction (this is the curriculum): sometimes-null fields, `resource_type` wanting to be an enum, nested config objects.*
 
-### Week 2
-- [ ] Widen `Node` to full field set: unique_id, name, resource_type, package, path, materialization, tags, description, checksum
-- [ ] Add `ResourceType` enum
-- [ ] Add `Edge` model parsed from `parent_map`
-- [ ] mypy strict passing on all of it
-- [ ] Tests for awkward cases: node with no parents, source vs model
+### Week 2 — in progress
+
+Read Robust Python chapters on enums and Optional/Union first.
+
+- [ ] Replace `resource_type: str` with an `Enum` or `Literal` — try both, decide which fits
+- [ ] Add `name`, `package_name` to `Node` — only add more fields once something downstream actually needs them (keep it minimal, not the full original field list)
+- [ ] `Edge` model from `parent_map` (`unique_id: [parent unique_ids]`) — attempt cold before asking for help
+- [ ] Tests for awkward cases: node with no parents, seed vs model vs test
+- [ ] Failure-case test: broken/missing field → `pytest.raises(ValidationError)`
+- [ ] mypy strict clean throughout
 - [ ] Commit
 
 ### Week 3
@@ -147,9 +159,10 @@ Work through FastAPI's official Tutorial - User Guide, but build **your** API al
 ## Phase 4 — Logging, container, CI (Weeks 10–12)
 
 - [ ] Structured JSON logging with correlation IDs (**not `print`**)
-- [ ] Multi-stage Dockerfile
+- [ ] Multi-stage Dockerfile (`uv sync --no-dev` in the final stage — dev deps stay out of the image)
 - [ ] GitHub Actions running: mypy, ruff, pytest, container build
 - [ ] Deploy to Cloud Run
+- [ ] **Optional, only if on schedule:** one LLM call with Pydantic-validated structured output — small taste of the AI-engineering target without derailing the project
 
 *Cloud Run deploy is where January's infrastructure work (Terraform, Vertex AI) picks up.*
 
@@ -167,12 +180,13 @@ Every one of those sounds plausible and will eat a month teaching you nothing yo
 
 ## Resources, in priority order
 
-1. **FastAPI official docs** — best official tutorial in the Python ecosystem. Do the whole Tutorial - User Guide.
-2. **ArjanCodes (YouTube)** — Python software *design* for people who know the syntax. Watch the refactoring videos where he improves working-but-bad code. That's the skill you want.
-3. **cosmicpython.com** (*Architecture Patterns with Python*) — free online. After Week 6.
-4. **Brian Okken, *Python Testing with pytest*** — short, practical. *Test & Code* podcast is good commute material.
-5. **Astral uv + ruff docs** — brief, both are now the Python default.
-6. **mCoding (YouTube)** — his logging video is the clearest explanation of Python's logging module anywhere.
+1. **FastAPI official docs** — best official tutorial in the Python ecosystem. Do the whole Tutorial - User Guide. **TestDriven.io's FastAPI + Docker course** is a good companion for Weeks 7–12 (API, then container).
+2. **Robert Viafore, *Robust Python*** — reference, not a cover-to-cover read. Pull the relevant chapter just-in-time (e.g. enums/Optional before Week 2), apply it within 24 hours, note the takeaway in `NOTES.md`.
+3. **ArjanCodes (YouTube)** — Python software *design* for people who know the syntax. Watch the refactoring videos where he improves working-but-bad code. That's the skill you want.
+4. **cosmicpython.com** (*Architecture Patterns with Python*) — free online. After Week 6.
+5. **Brian Okken, *Python Testing with pytest*** — short, practical. *Test & Code* podcast is good commute material.
+6. **Astral uv + ruff docs** — brief, both are now the Python default.
+7. **mCoding (YouTube)** — his logging video is the clearest explanation of Python's logging module anywhere.
 
 **Skip:** general Python courses, Real Python's beginner track, anything titled "Python for Data Science." You're past all of it.
 

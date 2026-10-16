@@ -81,13 +81,13 @@ In-memory only. No database. Learn typing and parsing without fighting an ORM.
 
 Read Robust Python chapters on enums and Optional/Union first.
 
-- [ ] Replace `resource_type: str` with an `Enum` or `Literal` — try both, decide which fits
-- [ ] Add `name`, `package_name` to `Node` — only add more fields once something downstream actually needs them (keep it minimal, not the full original field list)
-- [ ] `Edge` model from `parent_map` (`unique_id: [parent unique_ids]`) — attempt cold before asking for help
-- [ ] Tests for awkward cases: node with no parents, seed vs model vs test
-- [ ] Failure-case test: broken/missing field → `pytest.raises(ValidationError)`
-- [ ] mypy strict clean throughout
-- [ ] Commit
+- [x] Replace `resource_type: str` with an `Enum` or `Literal` — try both, decide which fits
+- [x] Add `name`, `package_name` to `Node` — only add more fields once something downstream actually needs them (keep it minimal, not the full original field list)
+- [x] `Edge` model from `parent_map` (`unique_id: [parent unique_ids]`) — attempt cold before asking for help
+- [x] Tests for awkward cases: node with no parents, seed vs model vs test
+- [x] Failure-case test: broken/missing field → `pytest.raises(ValidationError)`
+- [x] mypy strict clean throughout
+- [x] Commit
 
 ### Week 3
 - [ ] `Invocation` model: invocation_id, generated_at, dbt_version, target, elapsed_time

@@ -77,7 +77,7 @@ In-memory only. No database. Learn typing and parsing without fighting an ORM.
 
 *Expected friction (this is the curriculum): sometimes-null fields, `resource_type` wanting to be an enum, nested config objects.*
 
-### Week 2 — in progress
+### Week 2 ✅ done
 
 Read Robust Python chapters on enums and Optional/Union first.
 

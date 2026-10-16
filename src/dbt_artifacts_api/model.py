@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import StrEnum
+
+from pydantic import BaseModel, Field
+
 
 class ResourceType(StrEnum):
     MODEL = "model"
@@ -9,6 +11,7 @@ class ResourceType(StrEnum):
     SOURCE = "source"
     TEST = "test"
     MACRO = "macro"
+
 
 class Node(BaseModel):
     database: str
@@ -25,9 +28,11 @@ class Node(BaseModel):
     created_at: datetime
     checksum: str
 
+
 class Edge(BaseModel):
     parent: str
     child: str
+
 
 class Invocation(BaseModel):
     invocation_id: str
@@ -35,6 +40,7 @@ class Invocation(BaseModel):
     dbt_version: str
     target: str | None
     elapsed_time: float
+
 
 class NodeResult(BaseModel):
     invocation_id: str

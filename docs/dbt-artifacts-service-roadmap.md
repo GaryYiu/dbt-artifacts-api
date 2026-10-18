@@ -90,9 +90,9 @@ Read Robust Python chapters on enums and Optional/Union first.
 - [x] Commit
 
 ### Week 3
-- [ ] `Invocation` model: invocation_id, generated_at, dbt_version, target, elapsed_time
-- [ ] `NodeResult` model: invocation_id, unique_id, status, execution_time, rows_affected, bytes_processed, message
-- [ ] Dig `bytes_processed` out of `adapter_response`
+- [x] `Invocation` model: invocation_id, generated_at, dbt_version, target, elapsed_time
+- [x] `NodeResult` model: invocation_id, unique_id, status, execution_time, rows_affected, bytes_processed, message
+- [x] Dig `bytes_processed` out of `adapter_response`
 - [ ] Tiny CLI (argparse is fine): takes both file paths, prints 5 slowest models
 - [ ] Commit
 

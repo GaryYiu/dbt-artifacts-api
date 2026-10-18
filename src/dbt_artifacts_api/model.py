@@ -38,7 +38,6 @@ class Invocation(BaseModel):
     invocation_id: str
     generated_at: str
     dbt_version: str
-    target: str | None
     elapsed_time: float
 
 
@@ -48,5 +47,5 @@ class NodeResult(BaseModel):
     status: str
     execution_time: float
     rows_affected: int
-    bytes_processed: int
+    bytes_processed: int | None = None
     message: str | None
